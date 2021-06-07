@@ -2,25 +2,27 @@ const express = require('express')
 const session = require('express-session')
 const dataService = require("./services/data.service")
 const app = express();
-app.use(express.json())
 //SESSION
 app.use(session({
     secret: 'randomsecurestring',
     resave: false, //saving session after modification else true
     saveUninitialized: false //saving Uninitialized values here let it be false
 }))
+app.use(express.json())
+
 //Middle ware
 app.use((req, res, next) => {
     console.log("Middle Ware")
     next()
 })
-// NOW BRING THE  console.log(req.body) TO MIDDLE WARE
+// NOW how BRING THE  console.log(req.body) TO MIDDLE WARE
 const logMiddleware = (req, res, next) => {
     console.log(req.body)
     next()
 }
-//Now we need to call
-app.use(logMiddleware)
+//Now we need to call to use in application
+//app.use(logMiddleware)
+
 const authMiddleware = (req, res, next) => {
     if (!req.session.current_user) {
         return res.json({
@@ -41,14 +43,21 @@ app.get('/', (req, res) => {
 //register api
 app.post('/register', (req, res) => {
 
-    const result = dataService.register(req.body.uname, req.body.acno, req.body.pswd)
-    console.log(res.status(result.statusCode).json(result))
+    //const result = dataService.register(req.body.uname, req.body.acno, req.body.pswd)
+    dataService.register(req.body.uname, req.body.acno, req.body.pswd)
+        .then(result => {
+            res.status(result.statusCode).json(result)
+        })
+
+    //res.status(200).send("success")
 })
 //POST-LOGIN
 //LOGIN API
 app.post('/login', (req, res) => {
-    const result = dataService.login(req,req.body.acno, req.body.pswd)
-    console.log(res.status(result.statusCode).json(result))
+    dataService.login(req, req.body.acno, req.body.pswd)
+        .then(result => {
+            res.status(result.statusCode).json(result)
+        })
 })
 //POST-DEPOSIT
 app.post('/deposit', authMiddleware, (req, res) => {

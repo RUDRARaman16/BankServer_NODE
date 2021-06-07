@@ -1,3 +1,5 @@
+const db = require('./db')
+
 let current_user;
 let AccountDetails = {
     1000: { acno: 1000, username: "userone", password: "userone", balance: 50000 },
@@ -6,54 +8,107 @@ let AccountDetails = {
     1003: { acno: 1003, username: "userfour", password: "userfour", balance: 6000 }
 }
 const register = (uname, acno, pswd) => {
-    let user = AccountDetails
-    if (acno in user) {
-        return {
-            statusCode: 422,
-            status: false,
-            message: "User Exists please login"
-        }
-    }
-    else {
-        user[acno] = {
-            acno,
-            username: uname,
-            password: pswd,
-            balance: 0
-        }
-        return {
-            statusCode: 200,
-            status: true,
-            message: "Successfully Registered"
-        }
-    }
-}
-const login = (req, acno, pswd) => {
-    let users = AccountDetails
-    if (acno in users) {
-        if (pswd == users[acno]["password"]) {
-            req.session.current_user = users[acno]
+
+    return db.User.findOne({ acno })
+        .then(user => {
+            console.log(user)
+
+            if (user) {
+                return {
+                    statusCode: 422,
+                    status: false,
+                    message: "User Exists please login"
+                }
+            }
+            else {
+                const newUser = new db.User({
+                    acno,
+                    username: uname,
+                    password: pswd,
+                    balance: 0
+                })
+                newUser.save()
+            }
             return {
                 statusCode: 200,
                 status: true,
-                message: "succcessfull login"
+                message: "Successfully Registered"
             }
-        }
-        else {
-            return {
-                statusCode: 422,
-                status: false,
-                message: "incorrect password"
+        })
+
+    // let user = AccountDetails
+    // if (acno in user) {
+    //     return {
+    //         statusCode: 422,
+    //         status: false,
+    //         message: "User Exists please login"
+    //     }
+    // }
+    // else {
+    //     user[acno] = {
+    //         acno,
+    //         username: uname,
+    //         password: pswd,
+    //         balance: 0
+    //     }
+    //     return {
+    //         statusCode: 200,
+    //         status: true,
+    //         message: "Successfully Registered"
+    //     }
+    // }
+}
+//give same name as database for the arguments 
+const login = (req, acno, password) => {
+    var acno = parseInt(acno);
+    console.log(acno)
+    return db.User.findOne({ acno, password }) //this should be same as database keys
+        .then(user => {
+            if (user) {
+                console.log(user)
+                req.session.current_user = user
+                return {
+                    statusCode: 200,
+                    status: true,
+                    message: "succcessfull login"
+                }
             }
-        }
-    }
-    else {
-        return {
-            statusCode: 422,
-            status: false,
-            message: "Invalid Account"
-        }
-    }
+            else {
+                return {
+                    statusCode: 422,
+                    status: false,
+                    message: " invalid credentials"
+                }
+            }
+
+
+
+        })
+//     let users = AccountDetails
+//     if (acno in users) {
+//         if (pswd == users[acno]["password"]) {
+//             req.session.current_user = users[acno]
+//             return {
+//                 statusCode: 200,
+//                 status: true,
+//                 message: "succcessfull login"
+//             }
+//         }
+//         else {
+//             return {
+//                 statusCode: 422,
+//                 status: false,
+//                 message: "incorrect password"
+//             }
+//         }
+//     }
+//     else {
+//         return {
+//             statusCode: 422,
+//             status: false,
+//             message: "Invalid Account"
+//         }
+//     }
 }
 const deposit = (acno, pswd, amt) => {
     var amount = parseInt(amt)
