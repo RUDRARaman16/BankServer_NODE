@@ -61,13 +61,19 @@ app.post('/login', (req, res) => {
 })
 //POST-DEPOSIT
 app.post('/deposit', authMiddleware, (req, res) => {
-    console.log(req.session.current_user)
-    const result = dataService.deposit(req.body.acno, req.body.pswd, req.body.amount)
-    console.log(res.status(result.statusCode).json(result))
+    //console.log(req.session.current_user)
+    dataService.deposit(req.body.acno, req.body.pswd, req.body.amount)
+    .then(result => {
+        res.status(result.statusCode).json(result)
+    })
+    
 })
 app.post('/withdraw', authMiddleware, (req, res) => {
-    const result = dataService.withdraw(req.body.acno, req.body.pswd, req.body.amount)
-    console.log(res.status(result.statusCode).json(result))
+    dataService.withdraw(req.body.acno, req.body.pswd, req.body.amount)
+    .then(result => {
+        res.status(result.statusCode).json(result)
+    })
+  
 })
 //PUt-update modify whole
 app.put('/', (req, res) => {
